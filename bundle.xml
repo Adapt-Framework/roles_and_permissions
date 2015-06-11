@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<adapt_framework>
+    <bundle>
+        <label>Roles and Permissions</label>
+        <name>roles_and_permissions</name>
+        <version>1.0.0</version>
+        <type>extension</type>
+        <namespace>/extensions/roles_and_permissions</namespace>
+        <description>Allows for complex permissioning and password management.</description>
+        <copyright>2015 Adapt Framework</copyright>
+        <license>MIT</license>
+        <website>http://www.adaptframework.com/documentation/extensions/roles_and_permissions</website>
+        <depends_on>
+            <bundle>users</bundle>
+        </depends_on>
+    </bundle>
+</adapt_framework>
