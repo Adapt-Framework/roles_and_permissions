@@ -115,12 +115,6 @@ $sql->create_table('role_password_policy_id')
  */
 $role = new model_role();
 $role->bundle_name = 'roles_and_permissions';
-$role->name = 'Administrator';
-$role->description = 'Accounts used for administration.';
-$role->save();
-
-$role = new model_role();
-$role->bundle_name = 'roles_and_permissions';
 $role->name = 'User';
 $role->description = 'General user accounts.';
 $role->save();
@@ -144,22 +138,31 @@ $permission->description = 'Allows the user to change there password whenever th
 $permission->php_key = 'PERM_CAN_CHANGE_PASSWORD';
 $permission->save();
 
-
-$cat = new model_permission_category();
-$cat->bundle_name = 'roles_and_permissions';
-$cat->name = 'administration';
-$cat->label = 'Administration';
-$cat->save();
-
+$change_password_permission = $permission->permission_id;
 
 $permission = new model_permission();
 $permission->permission_category_id = $cat->permission_category_id;
 $permission->bundle_name = 'roles_and_permissions';
-$permission->name = 'can_login_to_administrator';
-$permission->label = 'Can login to administrator';
-$permission->description = 'Allows the user to access the administration area of the site.';
-$permission->php_key = 'PERM_CAN_LOGIN_TO_ADMINISTRATOR';
+$permission->name = 'can_login';
+$permission->label = 'Can login';
+$permission->description = 'Allows the user to login to the site.';
+$permission->php_key = 'PERM_CAN_LOGIN';
 $permission->save();
+
+$login_permission = $permission->permission_id;
+
+/*
+ * Add permissions to the user role
+ */
+$role_permission = new model_role_permission();
+$role_permission->role_id = $role->role_id;
+$role_permission->permission_id = $login_permission;
+$role_permission->save();
+
+$role_permission = new model_role_permission();
+$role_permission->role_id = $role->role_id;
+$role_permission->permission_id = $change_password_permission;
+$role_permission->save();
 
 
 ?>
