@@ -86,4 +86,18 @@ foreach($results as $result){
     return false;
 });
 
+/* Add a new action to set the group on joining */
+\application\controller_root::extend('action_set_role', function($_this){
+    $role_name = $_this->setting('roles_and_permissions.default_role');
+    $model = new model_role($role_name);
+    if ($model->is_loaded && $_this->session->is_logged_in){
+        $role_user = new model_role_user();
+        $role_user->role_id = $model->role_id;
+        $role_user->user_id = $_this->session->user->user_id;
+        $role_user->save();
+    }
+});
+
+
+
 ?>

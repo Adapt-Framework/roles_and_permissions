@@ -44,6 +44,7 @@ $sql->create_table('role_user')
 $sql->create_table('permission_category')
     ->add('permission_category_id', 'bigint')
     ->add('bundle_name', 'varchar(128)', false)
+    //->add('show', 'enum("Yes", "No")', true, 'Yes') //Should it be displayed in the administator?
     ->add('name', 'varchar(128)', false)
     ->add('label', 'varchar(128)', false)
     ->add('description', 'text')
@@ -98,7 +99,7 @@ $sql->create_table('password_policy')
     ->primary_key('password_policy_id')
     ->execute();
 
-$sql->create_table('role_password_policy_id')
+$sql->create_table('role_password_policy')
     ->add('role_password_policy_id', 'bigint')
     ->add('role_id', 'bigint')
     ->add('password_policy_id', 'bigint')
@@ -164,5 +165,20 @@ $role_permission->role_id = $role->role_id;
 $role_permission->permission_id = $change_password_permission;
 $role_permission->save();
 
+/*
+ * Update the user join forms and add the set_role
+ * action to them
+ */
+$form = new model_form('join_email');
+if ($form->is_loaded){
+    $form->actions = $form->actions . "," . "set-role";
+}
+$form->save();
+
+$form = new model_form('join_username');
+if ($form->is_loaded){
+    $form->actions = $form->actions . "," . "set-role";
+}
+$form->save();
 
 ?>
