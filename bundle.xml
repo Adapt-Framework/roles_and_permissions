@@ -5,14 +5,248 @@
         <name>roles_and_permissions</name>
         <version>1.0.0</version>
         <type>extension</type>
-        <namespace>/extensions/roles_and_permissions</namespace>
-        <description>Allows for complex permissioning and password management.</description>
+        <namespace>\adapt\users\roles_and_permissions</namespace>
+        <description>Provides enterprise grade permissioning and password management.</description>
         <copyright>2015 Adapt Framework</copyright>
         <license>MIT</license>
         <website>http://www.adaptframework.com/documentation/extensions/roles_and_permissions</website>
         <depends_on>
-            <bundle>users</bundle>
+            <bundle>
+                <name>users</name>
+                <version>1.0</version>
+            </bundle>
+            <bundle>
+                <name>adapt</name>
+                <version>1.0</version>
+            </bundle>
         </depends_on>
+        <schema>
+            <add>
+                <table name="user_password_history">
+                    <field name="user_password_history_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>History #</label>
+                    </field>
+                    <field name="user_id" key="foreign" referenced-table-name="user" referenced-field-name="user_id">
+                        <data_type>bigint</data_type>
+                        <label>User #</label>
+                    </field>
+                    <field name="password">
+                        <data_type>varchar</data_type>
+                        <max_length>256</max_length>
+                    </field>
+                </table>
+                <table name="role">
+                    <field name="role_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Role #</label>
+                    </field>
+                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
+                        <data_type>bigint</data_type>
+                        <label>Bundle</label>
+                    </field>
+                    <field name="name" index="Yes" index-size="32">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
+                        <nullable>No</nullable>
+                        <label>Name</label>
+                    </field>
+                    <field name="label">
+                        <data_type>varchar</data_type>
+                        <max_length>128</max_length>
+                        <nullable>No</nullable>
+                        <label>Label</label>
+                    </field>
+                    <field name="description">
+                        <data_type>text</data_type>
+                        <label>Description</label>
+                    </field>
+                    <record>
+                        <name>users</name>
+                        <label>Users</label>
+                        <description>General user accounts.</description>
+                    </record>
+                </table>
+                <table name="role_user">
+                    <field name="role_user_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Role user #</label>
+                    </field>
+                    <field name="role_id" key="foreign" referenced-table-name="role" referenced-field-name="role_id">
+                        <data_type>bigint</data_type>
+                        <label>Role #</label>
+                    </field>
+                    <field name="user_id" key="foreign" referenced-table-name="user" referenced-field-name="user_id">
+                        <data_type>bigint</data_type>
+                        <label>User #</label>
+                    </field>
+                </table>
+                <table name="permission_category">
+                    <field name="permission_category_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Category #</label>
+                    </field>
+                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
+                        <data_type>bigint</data_type>
+                        <label>Bundle</label>
+                    </field>
+                    <field name="name" index="Yes" index-size="32">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
+                        <nullable>No</nullable>
+                        <label>Name</label>
+                    </field>
+                    <field name="label">
+                        <data_type>varchar</data_type>
+                        <max_length>128</max_length>
+                        <nullable>No</nullable>
+                        <label>Label</label>
+                    </field>
+                    <field name="description">
+                        <data_type>text</data_type>
+                        <label>Description</label>
+                    </field>
+                </table>
+                <table name="permission">
+                    <field name="permission_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Permission #</label>
+                    </field>
+                    <field name="permission_category_id" key="foreign" referenced-table-name="permission_category" referenced-field-name="permission_category_id">
+                        <data_type>bigint</data_type>
+                        <lookup_table>permission_category</lookup_table>
+                        <label>Category #</label>
+                    </field>
+                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
+                        <data_type>bigint</data_type>
+                        <label>Bundle</label>
+                    </field>
+                    <field name="php_key">
+                        <data_type>varchar</data_type>
+                        <max_length>128</max_length>
+                        <nullable>No</nullable>
+                        <label>PHP Key</label>
+                        <description>The PHP key will be used as a constant defining the value of the permission_id.  This make code much more human friendly :)</description>
+                    </field>
+                    <field name="name" index="Yes" index-size="32">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
+                        <nullable>No</nullable>
+                        <label>Name</label>
+                    </field>
+                    <field name="label">
+                        <data_type>varchar</data_type>
+                        <max_length>128</max_length>
+                        <nullable>No</nullable>
+                        <label>Label</label>
+                    </field>
+                    <field name="description">
+                        <data_type>text</data_type>
+                        <label>Description</label>
+                    </field>
+                </table>
+                <table name="role_permission">
+                    <field name="role_permission_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Role permission #</label>
+                    </field>
+                    <field name="role_id" key="foreign" referenced-table-name="role" referenced-field-name="role_id">
+                        <data_type>bigint</data_type>
+                        <label>Role #</label>
+                    </field>
+                    <field name="permission_id" key="foreign" referenced-table-name="permission" referenced-field-name="permission_id">
+                        <data_type>bigint</data_type>
+                        <label>Permission #</label>
+                    </field>
+                </table>
+                <table name="password_policy">
+                    <field name="password_policy_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Password policy #</label>
+                    </field>
+                    <field name="name" index="Yes" index-size="32">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
+                        <nullable>No</nullable>
+                        <label>Name</label>
+                    </field>
+                    <field name="label">
+                        <data_type>varchar</data_type>
+                        <max_length>128</max_length>
+                        <nullable>No</nullable>
+                        <label>Label</label>
+                    </field>
+                    <field name="description">
+                        <data_type>text</data_type>
+                        <label>Description</label>
+                    </field>
+                    <field name="allow_password_change">
+                        <data_type>enum('Yes', 'No')</data_type>
+                        <default_value>Yes</default_value>
+                        <label>Allowed to change password?</label>
+                    </field>
+                    <field name="can_change_password_after_days">
+                        <data_type>int</data_type>
+                        <default_value>0</default_value>
+                        <label>Min password age (days)</label>
+                    </field>
+                    <field name="must_change_password_after_days">
+                        <data_type>int</data_type>
+                        <label>Max password age (days)</label>
+                    </field>
+                    <field name="password_history">
+                        <data_type>int</data_type>
+                        <default_value>0</default_value>
+                        <label>Password history</label>
+                        <description>How often can a password be re-used?</description>
+                    </field>
+                    <field name="min_length">
+                        <data_type>int</data_type>
+                        <default_value>6</default_value>
+                        <label>Min password length?</label>
+                    </field>
+                    <field name="max_length">
+                        <data_type>int</data_type>
+                        <default_value>25</default_value>
+                        <label>Max password length?</label>
+                    </field>
+                    <field name="mixed_case">
+                        <data_type>enum('Yes', 'No')</data_type>
+                        <default_value>No</default_value>
+                        <label>Must be mixed case</label>
+                    </field>
+                    <field name="include_alpha">
+                        <data_type>enum('Yes', 'No')</data_type>
+                        <default_value>Yes</default_value>
+                        <label>Must include letters from a-z</label>
+                    </field>
+                    <field name="include_numeric">
+                        <data_type>enum('Yes', 'No')</data_type>
+                        <default_value>Yes</default_value>
+                        <label>Must include numbers</label>
+                    </field>
+                    <field name="include_symbols">
+                        <data_type>enum('Yes', 'No')</data_type>
+                        <default_value>No</default_value>
+                        <label>Must include symbols</label>
+                    </field>
+                </table>
+                <table name="role_password_policy">
+                    <field name="role_password_policy_id" key="primary" auto-increment="Yes">
+                        <data_type>bigint</data_type>
+                        <label>Role password policy #</label>
+                    </field>
+                    <field name="role_id" key="foreign" referenced-table-name="role" referenced-field-name="role_id">
+                        <data_type>bigint</data_type>
+                        <label>Role #</label>
+                    </field>
+                    <field name="password_policy_id" key="foreign" referenced-table-name="password_policy" referenced-field-name="password_policy_id">
+                        <data_type>bigint</data_type>
+                        <label>Password policy #</label>
+                    </field>
+                </table>
+            </add>
+        </schema>
         <settings>
             <category name="Roles and permissions">
                 <setting>
