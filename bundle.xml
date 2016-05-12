@@ -17,7 +17,10 @@
             </bundle>
             <bundle>
                 <name>adapt</name>
-                <version>1.0</version>
+                <version>2.0</version>
+            </bundle>
+            <bundle>
+                <name>jquery</name>
             </bundle>
         </depends_on>
         <schema>
@@ -41,14 +44,14 @@
                         <data_type>bigint</data_type>
                         <label>Role #</label>
                     </field>
-                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
-                        <data_type>bigint</data_type>
+                    <field name="bundle_name">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
                         <label>Bundle</label>
                     </field>
                     <field name="name" index="Yes" index-size="32">
                         <data_type>varchar</data_type>
                         <max_length>64</max_length>
-                        <nullable>No</nullable>
                         <label>Name</label>
                     </field>
                     <field name="label">
@@ -86,8 +89,9 @@
                         <data_type>bigint</data_type>
                         <label>Category #</label>
                     </field>
-                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
-                        <data_type>bigint</data_type>
+                    <field name="bundle_name">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
                         <label>Bundle</label>
                     </field>
                     <field name="name" index="Yes" index-size="32">
@@ -117,8 +121,9 @@
                         <lookup_table>permission_category</lookup_table>
                         <label>Category #</label>
                     </field>
-                    <field name="bundle_version_id" key="foreign" referenced-table-name="bundle_version" referenced-field-name="bundle_version_id">
-                        <data_type>bigint</data_type>
+                    <field name="bundle_name">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
                         <label>Bundle</label>
                     </field>
                     <field name="php_key">
@@ -131,7 +136,6 @@
                     <field name="name" index="Yes" index-size="32">
                         <data_type>varchar</data_type>
                         <max_length>64</max_length>
-                        <nullable>No</nullable>
                         <label>Name</label>
                     </field>
                     <field name="label">
@@ -164,10 +168,13 @@
                         <data_type>bigint</data_type>
                         <label>Password policy #</label>
                     </field>
+                    <field name="priority">
+                        <data_type>int</data_type>
+                        <label>Priority</label>
+                    </field>
                     <field name="name" index="Yes" index-size="32">
                         <data_type>varchar</data_type>
                         <max_length>64</max_length>
-                        <nullable>No</nullable>
                         <label>Name</label>
                     </field>
                     <field name="label">
@@ -247,6 +254,34 @@
                 </table>
             </add>
         </schema>
+        <forms>
+            <form name="change_password_with_policy" submission-url="/password-changed" actions="change-password" method="post" title="Change your password" show-steps="No" show-processing-page="Yes">
+                <page description="Please enter your current password before choosing a new one. {{policy-description}}">
+                    <section layout="standard" repeatable="No">
+                        <group layout="simple">
+                            <field type="Password" name="current_password" data-type="varchar" label="Current password" max-length="64" mandatory="Yes" />
+                        </group>
+                        <group layout="simple">
+                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New password" max-length="64" mandatory="Yes" description="" />
+                        </group>
+                    </section>
+                    <button style="Primary" action="Next page" label="Change password" />
+                </page>
+            </form>
+            <form name="new_password_with_policy" submission-url="/password-changed" actions="set-new-password" method="post" title="Change your password" show-steps="No" show-processing-page="Yes">
+                <page description="Please choose a new password. {{policy-description}}">
+                    <section layout="standard" repeatable="No">
+                        <group layout="simple">
+                            <field type="Hidden" name="token" data-type="varchar" max-length="64" />
+                        </group>
+                        <group layout="simple">
+                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New password" max-length="64" mandatory="Yes" description="" />
+                        </group>
+                    </section>
+                    <button style="Primary" action="Next page" label="Change password" />
+                </page>
+            </form>
+        </forms>
         <settings>
             <category name="Roles and permissions">
                 <setting>
