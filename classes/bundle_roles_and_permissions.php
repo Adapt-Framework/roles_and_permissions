@@ -7,8 +7,15 @@ namespace adapt\users\roles_and_permissions{
     
     class bundle_roles_and_permissions extends \adapt\bundle{
         
-        public function __construct($data){
+    protected $_roles;
+
+
+    public function __construct($data){
             parent::__construct('roles_and_permissions', $data);
+            
+            $this->_roles = [];
+            
+            $this->register_config_handler('roles_and_permissions', 'user_roles', 'process_user_roles_tag');
         }
         
         public function boot(){
@@ -545,10 +552,59 @@ namespace adapt\users\roles_and_permissions{
             
             return false;
         }
+         
+        public function process_user_roles_tag($bundle, $tag_data){
+            if ($bundle instanceof \adapt\bundle && $tag_data instanceof \adapt\xml){
+                $this->register_install_handler($this->name, $bundle->name, 'install_users_roles');
+                
+                $user_roles_nodes = $tag_data->get();
+                $this->_roles[$bundle->name] = [];
+                print(user_roles_nodes);
+                foreach($user_roles_nodes as $user_role_node){
+                    print($user_role_node);
+                    if ($user_role_node instanceof \adapt\xml && $user_role_node->tag == 'user_role'){
+                        $child_nodes = $user_role_node->get();
+                        $user_roles = [];
+                        foreach($child_nodes as $key => $child_node){
+                            if ($child_node instanceof \adapt\xml){
+                                switch($child_node->tag){
+                                case "role":
+                                    $user_roles['role']['role'] = $child_node->get(0);
+                                    break;
+                                case "username":
+                                    $user_roles['role']['username'] = $child_node->get(0);;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!is_array($this->_roles[$bundle->name])) $this->_roles[$bundle_name] = [];
+                    $this->_roles[$bundle->name][] = $user_roles;
+                    }
+                }
+            }                                     
+        }
         
+        public function install_users_roles($bundle){
+            if ($bundle instanceof \adapt\bundle){
+                if (is_array($this->_roles[$bundle->name])){
+                    foreach($this->_roles[$bundle->name] as $roles){
+                        if(is_array($roles['role'])){
+                            foreach ($roles as $role) {
+                                $model_role = new model_role();
+                                $model_user = new model_user();
+                                if($model_role->load_by_name($role['role']) && $model_user->load_by_name($role['username'])){
+                                    $model_role_user = new model_role_user();
+                                    $model_role_user->role_id = $model_role->role_id;
+                                    $model_role_user->user_id = $model_user->user_id;
+                                    $model_role_user->save();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    
-    
 }
 
 ?>
