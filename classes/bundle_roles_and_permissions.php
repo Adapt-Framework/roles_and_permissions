@@ -16,6 +16,7 @@ namespace adapt\users\roles_and_permissions{
             $this->_roles = [];
             
             $this->register_config_handler('roles_and_permissions', 'user_roles', 'process_user_roles_tag');
+            $this->register_config_handler('roles_and_permissions', 'role_permissions', 'process_user_roles_tag');
         }
         
         public function boot(){
@@ -562,7 +563,7 @@ namespace adapt\users\roles_and_permissions{
                 print(user_roles_nodes);
                 foreach($user_roles_nodes as $user_role_node){
                     print($user_role_node);
-                    if ($user_role_node instanceof \adapt\xml && $user_role_node->tag == 'user_role'){
+                    if ($user_role_node instanceof \adapt\xml && ($user_role_node->tag == 'user_role'|| $user_role_node->tag == 'role_permission')){
                         $child_nodes = $user_role_node->get();
                         $user_roles = [];
                         foreach($child_nodes as $key => $child_node){
@@ -572,8 +573,15 @@ namespace adapt\users\roles_and_permissions{
                                     $user_roles['role']['role'] = $child_node->get(0);
                                     break;
                                 case "username":
-                                    $user_roles['role']['username'] = $child_node->get(0);;
+                                    $user_roles['role']['username'] = $child_node->get(0);
                                     break;
+                                case "permission":
+                                    $user_roles['permission']['permission'] = $child_node->get(0);
+                                    break;
+                                case "role_permission_name":
+                                    $user_roles['permission']['role'] = $child_node->get(0);
+                                    break;
+                                
                                 }
                             }
                         }
@@ -597,6 +605,20 @@ namespace adapt\users\roles_and_permissions{
                                     $model_role_user->role_id = $model_role->role_id;
                                     $model_role_user->user_id = $model_user->user_id;
                                     $model_role_user->save();
+                                }
+                            }
+                        }
+                        if(is_array($roles['permission'])){
+                            foreach ($roles as $role) {
+                                print_r($role);
+                                
+                                $model_role = new model_role();
+                                $model_permission = new model_permission();
+                                if($model_role->load_by_name($role['role']) && $model_permission->load_by_name($role['permission'])){
+                                    $model_role_permission = new model_role_permission();
+                                    $model_role_permission->role_id = $model_role->role_id;
+                                    $model_role_permission->permission_id = $model_permission->permission_id;
+                                    $model_role_permission->save();
                                 }
                             }
                         }
