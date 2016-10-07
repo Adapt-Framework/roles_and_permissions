@@ -560,7 +560,6 @@ namespace adapt\users\roles_and_permissions{
                 
                 $user_roles_nodes = $tag_data->get();
                 $this->_roles[$bundle->name] = [];
-                print(user_roles_nodes);
                 foreach($user_roles_nodes as $user_role_node){
                     print($user_role_node);
                     if ($user_role_node instanceof \adapt\xml && ($user_role_node->tag == 'user_role'|| $user_role_node->tag == 'role_permission')){
