@@ -584,7 +584,7 @@ namespace adapt\users\roles_and_permissions{
                                 }
                             }
                         }
-                        if (!is_array($this->_roles[$bundle->name])) $this->_roles[$bundle_name] = [];
+                        if (!is_array($this->_roles[$bundle->name])) $this->_roles[$bundle->name] = [];
                     $this->_roles[$bundle->name][] = $user_roles;
                     }
                 }
