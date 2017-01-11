@@ -259,16 +259,16 @@
                 <page description="Please enter your current password before choosing a new one. {{policy-description}}">
                     <section layout="standard" repeatable="No">
                         <group layout="simple">
-                            <field type="Password" name="current_password" data-type="varchar" label="Current password" max-length="64" mandatory="Yes" />
+                            <field type="Password" name="current_password" data-type="varchar" label="Current Password" max-length="64" mandatory="Yes" />
                         </group>
                         <group layout="simple">
-                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New password" max-length="64" mandatory="Yes" description="" />
+                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New Password" max-length="64" mandatory="Yes" description="" />
                         </group>
                     </section>
                     <button style="Primary" action="Next page" label="Change password" />
                 </page>
             </form>
-            <form name="new_password_with_policy" submission-url="/password-changed" actions="set-new-password" method="post" title="Change your password" show-steps="No" show-processing-page="Yes">
+            <form name="new_password_with_policy" submission-url="/password-changed" actions="set-new-password" method="post" title="Change Your Password" show-steps="No" show-processing-page="Yes">
                 <page description="Please choose a new password. {{policy-description}}">
                     <section layout="standard" repeatable="No">
                         <group layout="simple">
