@@ -53,7 +53,7 @@
                     </field>
                     <field name="name" index="Yes" index-size="32">
                         <data_type>varchar</data_type>
-                        <max_length>64</max_length>
+                        <max_length>256</max_length>
                         <label>Name</label>
                     </field>
                     <field name="label">
