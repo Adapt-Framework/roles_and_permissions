@@ -99,6 +99,62 @@ namespace adapt\users\roles_and_permissions{
                     return false;
                 });
                 
+                /* Extend the user an derive the permission level */
+                \adapt\users\model_user::extend(
+                    'mget_permission_level',
+                    function($_this){
+                        if (!$_this->is_loaded){
+                            return 0;
+                        }
+                        
+                        $local_cache_key = "roles_and_permission.permission_level.user{$_this->user_id}";
+                        $permission_level = $_this->store($local_cache_key);
+                        
+                        if (!is_null($permission_level)){
+                            return $permission_level;
+                        }
+                        
+                        $sql = $_this->data_source->sql;
+                        
+                        $sql->select('max(p.permission_level) as permission_level')
+                            ->from('role_user', 'ru')
+                            ->join('role', 'r',
+                                new sql_and(
+                                    new sql_cond('r.date_deleted', sql::IS, sql::NULL),
+                                    new sql_cond('r.role_id', sql::EQUALS, 'ru.role_id'),
+                                    new sql_cond('ru.user_id', sql::EQUALS, q($_this->user_id))
+                                )
+                            )
+                            ->join('role_permission', 'rp',
+                                new sql_and(
+                                    new sql_cond('rp.date_deleted', sql::IS, sql::NULL),
+                                    new sql_cond('rp.role_id', sql::EQUALS, 'r.role_id')
+                                )
+                            )
+                            ->join('permission', 'p',
+                                new sql_and(
+                                    new sql_cond('p.date_deleted', sql::IS, sql::NULL),
+                                    new sql_cond('p.permission_id', sql::EQUALS, 'rp.permission_id')
+                                )
+                            )
+                            ->where(
+                                new sql_and(
+                                    new sql_cond('ru.date_deleted', sql::IS, sql::NULL)
+                                )
+                            );
+                        
+                        $results = $sql->execute()->results();
+                        $permission_level = 0;
+                        if (count($results) == 1){
+                            $permission_level = $results[0]['permission_level'];
+                        }
+                        
+                        $_this->store($local_cache_key, $permission_level);
+                        
+                        return $permission_level;
+                    }
+                );
+                
                 /* Add a new action to set the group on joining */
                 \application\controller_root::extend('action_set_role', function($_this){
                     $role_name = $_this->setting('roles_and_permissions.default_role');
