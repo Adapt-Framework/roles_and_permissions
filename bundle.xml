@@ -150,6 +150,11 @@
                         <data_type>text</data_type>
                         <label>Description</label>
                     </field>
+                    <field name="permission_level">
+                        <data_type>bigint</data_type>
+                        <default_value>0</default_value>
+                        <label>The level of the permission</label>
+                    </field>
                 </table>
                 <table name="role_permission">
                     <field name="role_permission_id" key="primary" auto-increment="Yes">
