@@ -63,7 +63,7 @@ class model_role extends \adapt\model
      * Returns the permissions as models
      * @return array
      */
-    public function pget_permissions()
+    public function pget_perms()
     {
         return $this->_permissions;
     }
