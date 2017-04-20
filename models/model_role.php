@@ -108,7 +108,18 @@ class model_role extends \adapt\model
     public function delete()
     {
         // Tidy up the role_permissions table
-        if ($this->is_loaded) {
+        $this->wipe_permissions();
+
+        // Return the actual delete
+        return parent::delete();
+    }
+
+    /**
+     * Function that clears all the current permission links for a role
+     */
+    public function wipe_permissions()
+    {
+        if ($this->is_loaded && $this->role_id) {
             $sql = $this->data_source->sql;
             $sql->update('role_permission')
                 ->set('date_deleted', new sql_now())
@@ -119,8 +130,5 @@ class model_role extends \adapt\model
 
             $sql->execute();
         }
-
-        // Return the actual delete
-        return parent::delete();
     }
 }
