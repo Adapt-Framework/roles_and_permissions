@@ -100,4 +100,27 @@ class model_role extends \adapt\model
 
         return $level;
     }
+
+    /**
+     * Deletes a role
+     * @return bool
+     */
+    public function delete()
+    {
+        // Tidy up the role_permissions table
+        if ($this->is_loaded) {
+            $sql = $this->data_source->sql;
+            $sql->update('role_permission')
+                ->set('date_deleted', new sql_now())
+                ->where(new sql_and(
+                    new sql_cond('date_deleted', sql::IS, sql::NULL),
+                    new sql_cond('role_id', sql::EQUALS, $this->role_id)
+                ));
+
+            $sql->execute();
+        }
+
+        // Return the actual delete
+        return parent::delete();
+    }
 }
