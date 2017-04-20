@@ -31,7 +31,7 @@ class model_role extends \adapt\model
             if ($this->is_loaded && $this->role_id) {
                 // Load the permissions
                 $sql = $this->data_source->sql;
-                $sql->select('p.*')
+                $sql->select('p.permission_id as permission_id')
                     ->from('permission', 'p')
                     ->join('role_permission', 'rp', 'permission_id')
                     ->where(new sql_and(
@@ -42,8 +42,14 @@ class model_role extends \adapt\model
 
                 $results = $sql->execute()->results();
 
+                // Normalise the array
+                $ids = array();
+                foreach ($results as $result) {
+                    $ids[] = $result['permission_id'];
+                }
+
                 if (count($results) > 0) {
-                    $this->_permissions = model_permission::load_many('permission', $results);
+                    $this->_permissions = model_permission::load_many('permission', $ids);
                 }
             }
 
@@ -53,9 +59,30 @@ class model_role extends \adapt\model
         return false;
     }
 
-    public function mget_permissions()
+    /**
+     * Returns the permissions as models
+     * @return array
+     */
+    public function pget_perms()
     {
         return $this->_permissions;
+    }
+
+    /**
+     * Returns the permissions in array format
+     * @return array
+     */
+    public function mget_permissions()
+    {
+        $output = array();
+
+        foreach ($this->_permissions as $permission) {
+            if ($output instanceof \adapt\model && $output->is_loaded) {
+                $output[] = $permission->to_hash();
+            }
+        }
+
+        return $output;
     }
 
     /**
