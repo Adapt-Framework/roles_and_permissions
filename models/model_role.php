@@ -77,8 +77,8 @@ class model_role extends \adapt\model
         $output = array();
 
         foreach ($this->_permissions as $permission) {
-            if ($output instanceof \adapt\model && $output->is_loaded) {
-                $output[] = $permission->to_hash();
+            if ($permission instanceof \adapt\model && $permission->is_loaded) {
+                $output[] = $permission->to_hash()['permission'];
             }
         }
 
