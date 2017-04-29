@@ -100,16 +100,63 @@ namespace adapt\users\roles_and_permissions{
                 });
                 
                 /* Add a new action to set the group on joining */
-                \application\controller_root::extend('action_set_role', function($_this){
-                    $role_name = $_this->setting('roles_and_permissions.default_role');
-                    $model = new model_role($role_name);
-                    if ($model->is_loaded && $_this->session->is_logged_in){
-                        $role_user = new model_role_user();
-                        $role_user->role_id = $model->role_id;
-                        $role_user->user_id = $_this->session->user->user_id;
-                        $role_user->save();
+                \adapt\users\model_user::extend('set_role',
+                    function($_this, $role_name){
+                        /* Check the user doesn't already have the role */
+                        if (!$_this->has_role($role_name)){
+                            $role = new model_role();
+                            if (!$role->load_by_name($role_name)){
+                                $_this->error("Unknown role named '{$role_name}'");
+                                return false;
+                            }
+                            
+                            $role_user = new model_role_user();
+                            $role_user->role_id = $role->role_id;
+                            if ($_this->is_loaded){
+                                $role_user->user_id = $_this->user_id;
+                                return $role_user->save();
+                            }else{
+                                $_this->add($role_user);
+                                return true;
+                            }
+                            
+                        }
+                        
                     }
-                });
+                );
+                
+                \adapt\users\model_user::extend('has_role',
+                    function($_this, $role){
+                        if ($_this->is_loaded){
+                            $sql = $_this->data_source->sql;
+                            $sql->select('role_id')
+                                ->from('role_user')
+                                ->where(
+                                    new sql_cond('user_id', sql::EQUALS, $_this->user_id),
+                                    new sql_cond('date_delete', sql::IS, sql::NULL)
+                                );
+                            $results = $sql->execute(0)->results();
+                            
+                            if (count($results)){
+                                return true;
+                            }
+                            
+                            return false;
+                        }
+                        
+                    }
+                );
+                
+//                \application\controller_root::extend('action_set_role', function($_this){
+//                    $role_name = $_this->setting('roles_and_permissions.default_role');
+//                    $model = new model_role($role_name);
+//                    if ($model->is_loaded && $_this->session->is_logged_in){
+//                        $role_user = new model_role_user();
+//                        $role_user->role_id = $model->role_id;
+//                        $role_user->user_id = $_this->session->user->user_id;
+//                        $role_user->save();
+//                    }
+//                });
                 
                 \adapt\users\model_user::extend('pget_password_policy', function($_this){
                     if ($_this->is_loaded){
