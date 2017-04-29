@@ -294,7 +294,7 @@
                 <setting>
                     <name>roles_and_permissions.default_role</name>
                     <label>Default role group for new users</label>
-                    <default_value>Users</default_value>
+                    <default_value>users</default_value>
                 </setting>
             </category>
         </settings>
