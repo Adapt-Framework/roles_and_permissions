@@ -460,6 +460,40 @@ namespace adapt\users\roles_and_permissions{
                     return true;
                 });
                 
+                \adapt\users\model_user::extend('mget_permission_level',
+                    function($_this){
+                        $sql = $_this->data_source->sql;
+                        $sql->select('max(p.permission_level)')
+                            ->from('role_user', 'ru')
+                            ->join('role', 'r', new sql_and(
+                                new sql_cond('r.role_id', sql::EQUALS, 'ru.role_id'),
+                                new sql_cond('r.date_deleted', sql::IS, sql::NULL)
+                            ))
+                            ->join('role_permission', 'rp', new sql_and(
+                                new sql_cond('rp.role_id', sql::EQUALS, 'r.role_id'),
+                                new sql_cond('rp.date_deleted', sql::IS, sql::NULL)
+                            ))
+                            ->join('permission', 'p', new sql_and(
+                                new sql_cond('p.permission_id', sql::EQUALS, 'rp.permission_id'),
+                                new sql_cond('p.date_deleted', sql::IS, sql::NULL)
+                            ))
+                            ->where(
+                                new sql_and(
+                                    new sql_cond('ru.user_id', sql::EQUALS, q($_this->user_id)),
+                                    new sql_cond('ru.date_deleted', sql::IS, sql::NULL)
+                                )
+                            );
+                        
+                        $results = $sql->execute(60)->results();
+                        
+                        if (!$results || !count($results)){
+                            return 0;
+                        }
+                        
+                        return array_values($results[0])[0];
+                    }
+                );
+                
                 /*
                  * Override the user bundle to handle password changes
                  */
