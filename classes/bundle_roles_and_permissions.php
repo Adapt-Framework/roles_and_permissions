@@ -186,6 +186,30 @@ namespace adapt\users\roles_and_permissions{
                     }
                 );
                 
+                \adapt\users\model_user::extend('remove_role',
+                    function ($_this, $role_name){
+                        if ($_this->has_role($role_name)){
+                            $role = new model_role();
+                            if (!$role->load_by_name($role_name)){
+                                $this->error('Unable to find role');
+                                return false;
+                            }
+                            
+                            $children = $_this->get();
+                            foreach($children as $child){
+                                if ($child instanceof \adapt\model && $child->table_name == "role_user" && $child->role_id == $role->role_id){
+                                    $child->delete();
+                                }
+                            }
+                            
+                            return true;
+                        }
+                        
+                        $this->error('Role not found for this user');
+                        return false;
+                    }
+                );
+                
                 \adapt\users\model_user::extend('has_role',
                     function($_this, $role){
                         if ($_this->is_loaded){
