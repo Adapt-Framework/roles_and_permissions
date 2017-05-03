@@ -17,6 +17,14 @@ class model_role extends \adapt\model
     {
         parent::__construct('role', $id, $data_source);
     }
+    
+    public function permission_delete(){
+        if ($this->is_loaded && $this->session->user->permission_level < $this->highest_level){
+            return false;
+        }
+        
+        return true;
+    }
 
     /**
      * Loads the permissions into the role
@@ -105,10 +113,10 @@ class model_role extends \adapt\model
      * Deletes a role
      * @return bool
      */
-    public function delete()
-    {
+    public function delete(){
         // Tidy up the role_permissions table
-        $this->wipe_permissions();
+        $this->delete_permissions();
+        $this->delete_users();
 
         // Return the actual delete
         return parent::delete();
@@ -117,11 +125,27 @@ class model_role extends \adapt\model
     /**
      * Function that clears all the current permission links for a role
      */
-    public function wipe_permissions()
-    {
-        if ($this->is_loaded && $this->role_id) {
+    public function delete_permissions(){
+        if ($this->is_loaded && $this->role_id && $this->permission_delete()) {
             $sql = $this->data_source->sql;
             $sql->update('role_permission')
+                ->set('date_deleted', new sql_now())
+                ->where(new sql_and(
+                    new sql_cond('date_deleted', sql::IS, sql::NULL),
+                    new sql_cond('role_id', sql::EQUALS, $this->role_id)
+                ));
+
+            $sql->execute();
+        }
+    }
+    
+    /**
+     * Method to remove all users from the group
+     */
+    public function delete_users(){
+        if ($this->is_loaded && $this->role_id && $this->permission_delete()) {
+            $sql = $this->data_source->sql;
+            $sql->update('role_user')
                 ->set('date_deleted', new sql_now())
                 ->where(new sql_and(
                     new sql_cond('date_deleted', sql::IS, sql::NULL),
