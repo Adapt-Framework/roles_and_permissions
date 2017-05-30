@@ -169,6 +169,11 @@
                         <data_type>bigint</data_type>
                         <label>Permission #</label>
                     </field>
+                    <field name="bundle_name">
+                        <data_type>varchar</data_type>
+                        <max_length>64</max_length>
+                        <label>Bundle</label>
+                    </field>
                 </table>
                 <table name="password_policy">
                     <field name="password_policy_id" key="primary" auto-increment="Yes">
