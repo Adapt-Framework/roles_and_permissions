@@ -3,7 +3,7 @@
     <bundle>
         <label>Roles and Permissions</label>
         <name>roles_and_permissions</name>
-        <version>1.0.0</version>
+        <version>0.9.0</version>
         <type>extension</type>
         <namespace>\adapt\users\roles_and_permissions</namespace>
         <version_status>release</version_status>
@@ -51,9 +51,9 @@
                         <max_length>64</max_length>
                         <label>Bundle</label>
                     </field>
-                    <field name="name" index="Yes" index-size="32">
+                    <field name="name">
                         <data_type>varchar</data_type>
-                        <max_length>128</max_length>
+                        <max_length>255</max_length>
                         <label>Name</label>
                     </field>
                     <field name="label">
