@@ -3,7 +3,7 @@
     <bundle>
         <label>Roles and Permissions</label>
         <name>roles_and_permissions</name>
-        <version>1.0.0</version>
+        <version>0.9.0</version>
         <type>extension</type>
         <namespace>\adapt\users\roles_and_permissions</namespace>
         <version_status>release</version_status>
@@ -51,9 +51,9 @@
                         <max_length>64</max_length>
                         <label>Bundle</label>
                     </field>
-                    <field name="name" index="Yes" index-size="32">
+                    <field name="name">
                         <data_type>varchar</data_type>
-                        <max_length>128</max_length>
+                        <max_length>255</max_length>
                         <label>Name</label>
                     </field>
                     <field name="label">
@@ -271,10 +271,10 @@
                 <page description="Please enter your current password before choosing a new one. {{policy-description}}">
                     <section layout="standard" repeatable="No">
                         <group layout="simple">
-                            <field type="Password" name="current_password" data-type="varchar" label="Current Password" max-length="64" mandatory="Yes" />
+                            <field type="Password" field-name="current_password" data-type="varchar" label="Current Password" max-length="64" mandatory="Yes" />
                         </group>
                         <group layout="simple">
-                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New Password" max-length="64" mandatory="Yes" description="" />
+                            <field type="Password confirmation with strength indicator" field-name="new_password" data-type="varchar" label="New Password" max-length="64" mandatory="Yes" description="" />
                         </group>
                     </section>
                     <button style="Primary" action="Next page" label="Change password" />
@@ -284,10 +284,10 @@
                 <page description="Please choose a new password. {{policy-description}}">
                     <section layout="standard" repeatable="No">
                         <group layout="simple">
-                            <field type="Hidden" name="token" data-type="varchar" max-length="64" />
+                            <field type="Hidden" field-name="token" data-type="varchar" max-length="64" />
                         </group>
                         <group layout="simple">
-                            <field type="Password confirmation with strength indicator" name="new_password" data-type="varchar" label="New password" max-length="64" mandatory="Yes" description="" />
+                            <field type="Password confirmation with strength indicator" field-name="new_password" data-type="varchar" label="New password" max-length="64" mandatory="Yes" description="" />
                         </group>
                     </section>
                     <button style="Primary" action="Next page" label="Change password" />
