@@ -9,9 +9,12 @@
         <version_status>release</version_status>
         <availability>public</availability>
         <description>Provides enterprise grade permissioning and password management.</description>
-        <copyright>2015 Adapt Framework</copyright>
+        <copyright>2017 Matt Bruton</copyright>
         <license>MIT</license>
-        <website>http://www.adaptframework.com/documentation/extensions/roles_and_permissions</website>
+        <vendor>
+            <name>Adapt Framework</name>
+            <website>https://www.adaptframework.com</website>
+        </vendor>
         <depends_on>
             <bundle>
                 <name>users</name>
