@@ -285,7 +285,7 @@ namespace adapt\users\roles_and_permissions{
                                     new sql_cond('pp.date_deleted', sql::IS, new sql_null())
                                 )
                             )
-                            ->order_by('pp.priority', false)
+                            ->order_by('pp.priority')
                             ->limit(1)
                             ->execute(0)
                             ->results();
