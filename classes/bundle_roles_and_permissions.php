@@ -378,9 +378,14 @@ namespace adapt\users\roles_and_permissions{
                 });
                 
                 /* Override the password property on the user object */
-                \adapt\users\model_user::extend('change_password', function($_this, $new_password){
-                    if ($_this->is_loaded){
+                \adapt\users\model_user::extend('change_password', function($_this, $new_password, $policy_id = null){
+                    if ($_this->is_loaded || $policy_id !== null){
                         $policy = $_this->password_policy;
+
+                        if ($policy === null && $policy_id) {
+                            $policy = new model_password_policy($policy_id);
+                        }
+
                         if ($policy instanceof \adapt\model){
                             if ($policy->allow_password_change == "No"){
                                 $_this->error("You cannot change your password.");
