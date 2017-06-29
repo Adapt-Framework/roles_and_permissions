@@ -121,15 +121,15 @@
                         <data_type>bigint</data_type>
                         <label>Permission #</label>
                     </field>
-                    <field name="permission_category_id" key="foreign" referenced-table-name="permission_category" referenced-field-name="permission_category_id">
-                        <data_type>bigint</data_type>
-                        <lookup_table>permission_category</lookup_table>
-                        <label>Category #</label>
-                    </field>
                     <field name="bundle_name">
                         <data_type>varchar</data_type>
                         <max_length>64</max_length>
                         <label>Bundle</label>
+                    </field>
+                    <field name="permission_category_id" key="foreign" referenced-table-name="permission_category" referenced-field-name="permission_category_id">
+                        <data_type>bigint</data_type>
+                        <lookup_table>permission_category</lookup_table>
+                        <label>Category #</label>
                     </field>
                     <field name="php_key">
                         <data_type>varchar</data_type>
@@ -171,11 +171,6 @@
                     <field name="permission_id" key="foreign" referenced-table-name="permission" referenced-field-name="permission_id">
                         <data_type>bigint</data_type>
                         <label>Permission #</label>
-                    </field>
-                    <field name="bundle_name">
-                        <data_type>varchar</data_type>
-                        <max_length>64</max_length>
-                        <label>Bundle</label>
                     </field>
                 </table>
                 <table name="password_policy">

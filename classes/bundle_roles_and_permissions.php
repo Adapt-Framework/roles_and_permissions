@@ -15,8 +15,9 @@ namespace adapt\users\roles_and_permissions{
             
             $this->_roles = [];
             
-            $this->register_config_handler('roles_and_permissions', 'user_roles', 'process_user_roles_tag');
-            $this->register_config_handler('roles_and_permissions', 'role_permissions', 'process_user_roles_tag');
+            //$this->register_config_handler('roles_and_permissions', 'user_roles', 'process_user_roles_tag');
+            //$this->register_config_handler('roles_and_permissions', 'role_permissions', 'process_user_roles_tag');
+            $this->register_config_handler('roles_and_permissions', 'roles', 'process_roles_tag');
         }
         
         public function boot(){
@@ -251,24 +252,6 @@ namespace adapt\users\roles_and_permissions{
                                 return $child;
                             }
                         }
-                        
-                        //print "<pre>" . $_this
-                        //    ->data_source
-                        //    ->sql
-                        //    ->select('pp.*')
-                        //    ->from('password_policy', 'pp')
-                        //    ->join('role_password_policy', 'rpp', 'password_policy_id')
-                        //    ->join('role_user', 'ru', 'role_id')
-                        //    ->where(
-                        //        new sql_and(
-                        //            new sql_cond('ru.user_id', sql::EQUALS, sql::q($_this->user_id)),
-                        //            new sql_cond('ru.date_deleted', sql::IS, new sql_null()),
-                        //            new sql_cond('rpp.date_deleted', sql::IS, new sql_null()),
-                        //            new sql_cond('pp.date_deleted', sql::IS, new sql_null())
-                        //        )
-                        //    )
-                        //    ->order_by('pp.priority')
-                        //    ->limit(1) . "</pre>";
                         
                         $results = $_this
                             ->data_source
@@ -719,7 +702,65 @@ namespace adapt\users\roles_and_permissions{
             
             return false;
         }
-         
+        
+        public function process_roles_tag($bundle, $tag_data){
+            if ($bundle instanceof \adapt\bundle && $tag_data instanceof \adapt\xml){
+                $this->register_install_handler($this->name, $bundle->name, 'install_roles');
+                if (!is_array($this->_roles[$bundle->name])){
+                    $this->_roles[$bundle->name] = [];
+                }
+                
+                $roles = $tag_data->get();
+                foreach($roles as $role){
+                    if ($role instanceof \adapt\xml && $role->tag == "role"){
+                        
+                        $role_data = [];
+                        $role_data['name'] = $role->attr('name');
+                        
+                        $role_children = $role->get();
+                        foreach($role_children as $role_child){
+                            if ($role_child instanceof \adapt\xml){
+                                switch($role_child->tag){
+                                case "label":
+                                    $role_data['label'] = $role_child->get(0);
+                                    break;
+                                case "description":
+                                    $role_data['description'] = $role_child->get(0);
+                                    break;
+                                case "users":
+                                    $role_data['users'] = [];
+                                    $users_children = $role_child->get();
+                                    foreach($users_children as $user){
+                                        if ($user instanceof \adapt\xml && $user->tag == "username"){
+                                            $role_data['users'][] = $user->get(0);
+                                        }
+                                    }
+                                    break;
+                                case "permissions":
+                                    $role_data['permissions'] = [];
+                                    $permissions_children = $role_child->get();
+                                    foreach($permissions_children as $permission){
+                                        if ($permission instanceof \adapt\xml && $permission->tag == "permission"){
+                                            $role_data['permissions'][] = $permission->get(0);
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    if ($role_child->attr('get-from')){
+                                        $role_data[$role_child->tag] = $role_child->attributes;
+                                    }else{
+                                        $role_data[$role_child->tag] = $role_child->get(0);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        $this->_roles[$bundle->name][] = $role_data;
+                    }
+                }
+            }
+        }
+        
         public function process_user_roles_tag($bundle, $tag_data){
             if ($bundle instanceof \adapt\bundle && $tag_data instanceof \adapt\xml){
                 $this->register_install_handler($this->name, $bundle->name, 'install_users_roles');
@@ -727,7 +768,6 @@ namespace adapt\users\roles_and_permissions{
                 $user_roles_nodes = $tag_data->get();
                 $this->_roles[$bundle->name] = [];
                 foreach($user_roles_nodes as $user_role_node){
-                    print($user_role_node);
                     if ($user_role_node instanceof \adapt\xml && ($user_role_node->tag == 'user_role'|| $user_role_node->tag == 'role_permission')){
                         $child_nodes = $user_role_node->get();
                         $user_roles = [];
@@ -751,10 +791,69 @@ namespace adapt\users\roles_and_permissions{
                             }
                         }
                         if (!is_array($this->_roles[$bundle->name])) $this->_roles[$bundle->name] = [];
-                    $this->_roles[$bundle->name][] = $user_roles;
+                        $this->_roles[$bundle->name][] = $user_roles;
                     }
                 }
             }                                     
+        }
+        
+        public function install_roles($bundle){
+            if ($bundle instanceof \adapt\bundle){
+                if (is_array($this->_roles[$bundle->name])){
+                    foreach($this->_roles[$bundle->name] as $role){
+                        $model = new model_role();
+                        $model->disable_permission_checks = true;
+                        
+                        if (!$model->load_by_name($role['name'])){
+                            $model->errors(true);
+                            $model->bundle_name = $bundle->name;
+                        }
+                        
+                        foreach($role as $key => $value){
+                            if (!is_array($value)){
+                                $model->$key = $value;
+                            }else{
+                                if (isset($value['get-from'])){
+                                    $conditions = [];
+                                    foreach($value as $val_key => $val_val){
+                                        $matches = [];
+                                        if (preg_match("/^where\-([_A-Za-z0-9]+)\-is$/", $val_key, $matches)){
+                                            $conditions[] = new sql_cond($matches[1], sql::EQUALS, q($val_val));
+                                        }
+                                    }
+                                    
+                                    if (count($conditions)){
+                                        $sql = $this->data_source->sql;
+                                        $sql->select($value['get-from'] . '_id')
+                                            ->from($value['get-from']);
+                                        if (count($conditions) == 1){
+                                            $sql->where($conditions[0]);
+                                        }else{
+                                            $sql->where(new sql_and($conditions));
+                                        }
+                                        
+                                        $results = $sql->execute()->results();
+                                        
+                                        if (count($results) && count($results) == 1){
+                                            $model->$key = $results[0][$value['get-from'] . "_id"];
+                                        }
+                                    }
+                                }elseif($key == "permissions"){
+                                    foreach($value as $permission){
+                                        $model->add_permission_by_name($permission);
+                                    }
+                                }elseif($key == "users"){
+                                    foreach($value as $user){
+                                        $model->add_user_by_username($user);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        $model->save();
+                    }
+                }
+            }
         }
         
         public function install_users_roles($bundle){
@@ -775,8 +874,6 @@ namespace adapt\users\roles_and_permissions{
                         }
                         if(is_array($roles['permission'])){
                             foreach ($roles as $role) {
-                                print_r($role);
-                                
                                 $model_role = new model_role();
                                 $model_permission = new model_permission();
                                 if($model_role->load_by_name($role['role']) && $model_permission->load_by_name($role['permission'])){
