@@ -8,23 +8,23 @@ namespace adapt\users\roles_and_permissions{
     class bundle_roles_and_permissions extends \adapt\bundle{
         
     protected $_roles;
+    protected $_password_policies;
 
 
     public function __construct($data){
             parent::__construct('roles_and_permissions', $data);
             
             $this->_roles = [];
+            $this->_password_policies = [];
             
-            //$this->register_config_handler('roles_and_permissions', 'user_roles', 'process_user_roles_tag');
-            //$this->register_config_handler('roles_and_permissions', 'role_permissions', 'process_user_roles_tag');
             $this->register_config_handler('roles_and_permissions', 'roles', 'process_roles_tag');
+            $this->register_config_handler('roles_and_permissions', 'password_policies', 'process_password_policies_tag');
         }
         
         public function boot(){
             if (parent::boot()){
                 
                 $this->dom->head->add(new html_script(array('type' => 'text/javascript', 'src' => "/adapt/roles_and_permissions/roles_and_permissions-{$this->version}/static/js/roles_and_permissions.js")));
-                
                 
                 $sql = $this->data_source->sql;
                 $sql->select('*')
@@ -708,6 +708,34 @@ namespace adapt\users\roles_and_permissions{
             return false;
         }
         
+        public function process_password_policies_tag($bundle, $tag_data){
+            if ($bundle instanceof \adapt\bundle && $tag_data instanceof \adapt\xml){
+                $this->register_install_handler($this->name, $bundle->name, 'install_password_policies');
+                if (!is_array($this->_password_policies)){
+                    $this->_password_policies[$bundle->name] = [];
+                }
+                
+                $password_policies = $tag_data->get();
+                foreach($password_policies as $password_policy){
+                    if ($password_policy instanceof \adapt\xml && $password_policy->tag == "password_policy"){
+                        
+                        $policy_data = [];
+                        $policy_data['name'] = $password_policy->attr('name');
+                        
+                        $policy_children = $password_policy->get();
+                        foreach($policy_children as $child){
+                            if ($child instanceof \adapt\xml){
+                                $policy_data[$child->tag] = $child->text;
+                            }
+                        }
+                        
+                    }
+                    $this->_password_policies[$bundle->name][] = $policy_data;
+                }
+
+            }
+        }
+        
         public function process_roles_tag($bundle, $tag_data){
             if ($bundle instanceof \adapt\bundle && $tag_data instanceof \adapt\xml){
                 $this->register_install_handler($this->name, $bundle->name, 'install_roles');
@@ -750,6 +778,15 @@ namespace adapt\users\roles_and_permissions{
                                         }
                                     }
                                     break;
+                                case "password_policies":
+                                    $role_data['password_policies'] = [];
+                                    $policies_children = $role_child->get();
+                                    foreach($policies_children as $policy_child){
+                                        if ($policy_child instanceof \adapt\xml && $policy_child->tag == "password_policy"){
+                                            $role_data['password_policies'][] = $policy_child->get(0);
+                                        }
+                                    }
+                                    break;
                                 default:
                                     if ($role_child->attr('get-from')){
                                         $role_data[$role_child->tag] = $role_child->attributes;
@@ -759,7 +796,6 @@ namespace adapt\users\roles_and_permissions{
                                 }
                             }
                         }
-                        
                         $this->_roles[$bundle->name][] = $role_data;
                     }
                 }
@@ -800,6 +836,26 @@ namespace adapt\users\roles_and_permissions{
                     }
                 }
             }                                     
+        }
+        
+        public function install_password_policies($bundle){
+            if ($bundle instanceof \adapt\bundle){
+                if (is_array($this->_password_policies[$bundle->name])){
+                    foreach($this->_password_policies[$bundle->name] as $policy){
+                        $model = new model_password_policy();
+                        if (!$model->load_by_name($policy['name'])){
+                            $model->errors(true);
+                            $model->bundle_name = $bundle->name;
+                        }
+                        
+                        foreach($policy as $key => $value){
+                            $model->$key = $value;
+                        }
+                        
+                        $model->save();
+                    }
+                }
+            }
         }
         
         public function install_roles($bundle){
@@ -850,6 +906,10 @@ namespace adapt\users\roles_and_permissions{
                                 }elseif($key == "users"){
                                     foreach($value as $user){
                                         $model->add_user_by_username($user);
+                                    }
+                                }elseif($key == "password_policies"){
+                                    foreach($value as $policy){
+                                        $model->add_password_policy_by_name($policy);
                                     }
                                 }
                             }
