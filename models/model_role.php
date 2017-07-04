@@ -114,12 +114,21 @@ class model_role extends \adapt\model
      * @TODO: Check permission levels
      */
     public function add_user_by_username($username){
+        $return = false;
+        $extensions = $this->store('adapt.extensions');
+        if ($this->_disable_permission_checks){
+            $this->store('adapt.extensions', []);
+        }
         $user = new model_user();
         if ($user->load_by_username($username)){
-            return $this->add_user_by_user_id($user->user_id);
+            $return =  $this->add_user_by_user_id($user->user_id);
         }
         
-        return false;
+        if ($this->_disable_permission_checks){
+            $this->store('adapt.extensions', $extensions);
+        }
+        
+        return $return;
     }
     
     public function add_user_by_user_id($user_id){
@@ -196,6 +205,41 @@ class model_role extends \adapt\model
         $permission = new model_permission();
         if ($permission->load_by_name($permission_name)){
             return $this->add_permission_by_permission_id($permission->permission_id);
+        }
+        
+        return false;
+    }
+    
+    public function add_password_policy_by_name($password_policy_name){
+        if (!$this->has_password_policy($password_policy_name)){
+            $policy = new model_password_policy();
+            if ($policy->load_by_name($password_policy_name)){
+                $model = new model_role_password_policy();
+                $model->password_policy_id = $policy->password_policy_id;
+                $this->add($model);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public function has_password_policy($password_policy_name){
+        if (!$this->permission_edit() && !$this->_disable_permission_checks){
+            $this->error('You are not permitted to do this.');
+            return false;
+        }
+        
+        $policy = new model_password_policy();
+        if ($policy->load_by_name($password_policy_name)){
+            $children = $this->get();
+            foreach($children as $child){
+                if ($child instanceof \adapt\model && $child->table_name = "role_password_policy"){
+                    if ($child->password_policy_id == $policy->password_policy_id){
+                        return true;
+                    }
+                }
+            }
         }
         
         return false;
