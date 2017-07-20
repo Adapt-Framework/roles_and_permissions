@@ -426,7 +426,7 @@ namespace adapt\users\roles_and_permissions{
                             }
                             
                             if ($policy->include_symbols == "Yes"){
-                                if (!preg_match("/[-!$%^&*()_+|~=`{}\[\]:\";'<>?,.\/]/", $new_password)){
+                                if (!preg_match("/[-@!£#$%^&*()_+|~=`{}\[\]:\";'<>?,.\/]/", $new_password)){
                                     $_this->error("The password must contain at least one symbol.");
                                     return false;
                                 }
