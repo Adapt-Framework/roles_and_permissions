@@ -102,7 +102,7 @@ namespace adapt\users\roles_and_permissions{
                 
                 /* Extend the user an derive the permission level */
                 \adapt\users\model_user::extend(
-                    'mget_permission_level',
+                    'pget_permission_level',
                     function($_this){
                         if (!$_this->is_loaded){
                             return 0;
