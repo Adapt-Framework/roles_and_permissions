@@ -3,7 +3,7 @@
     <bundle>
         <label>Roles and Permissions</label>
         <name>roles_and_permissions</name>
-        <version>0.9.2</version>
+        <version>0.9.3</version>
         <type>extension</type>
         <namespace>\adapt\users\roles_and_permissions</namespace>
         <version_status>release</version_status>
