@@ -102,7 +102,7 @@ namespace adapt\users\roles_and_permissions{
                 
                 /* Extend the user an derive the permission level */
                 \adapt\users\model_user::extend(
-                    'mget_permission_level',
+                    'pget_permission_level',
                     function($_this){
                         if (!$_this->is_loaded){
                             return 0;
@@ -453,8 +453,8 @@ namespace adapt\users\roles_and_permissions{
                                 if (is_array($results)){
                                     
                                     foreach($results as $result){
-					if (password_verify($new_password, $result['password'])){
-					    $_this->error("The new password cannot be the same as your previous {$policy->password_history} passwords.");
+                                        if (password_verify($new_password, $result['password'])){
+                                            $_this->error("The new password cannot be the same as your previous {$policy->password_history} passwords.");
                                             return false;
                                         }
                                     }
